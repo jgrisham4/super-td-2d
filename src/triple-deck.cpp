@@ -1,16 +1,16 @@
 /*
  * This file is part of super-td-2d.
- * 
+ *
  * super-td-2d is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * super-td-2d is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with super-td-2d.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -31,11 +31,11 @@ int main() {
 
   // Setting up geometry
   geom<double> f(data.r,data.alpha);
-  
+
   // Grid inputs
   double ymax_hat = 2.0/M_PI*atan(data.ymax/data.b);
   std::cout << "ymax_hat = " << ymax_hat << std::endl;
-  
+
   // Creating grid in the computational plane
   mesh<double> grid(data.imax,data.jmax,data.a,data.b);
   grid.find_spacings(-1.0, 1.0, ymax_hat);
@@ -62,7 +62,7 @@ int main() {
 
     // Solving interaction problem
     soln<double> s = solve(f,grid,data.dt,data.tol,data.max_iter,data.surface_file,initial_guess);
-  
+
     // Writing results
     s.write(grid,data.tecplot_file);
     save_object(f, "geom.td");
@@ -74,13 +74,13 @@ int main() {
 
     // Solving interaction problem
     soln<double> s = solve(f,grid,data.dt,data.tol,data.max_iter,data.surface_file);
-  
+
     // Writing results
     s.write(grid,data.tecplot_file);
     save_object(f, "geom.td");
     save_object(grid, "mesh.td");
     save_object(s, "soln.td");
-    
+
   }
 
   return 0;

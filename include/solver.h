@@ -1,16 +1,16 @@
 /*
  * This file is part of super-td-2d.
- * 
+ *
  * super-td-2d is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * super-td-2d is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with super-td-2d.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -41,7 +41,7 @@ constexpr T Gamma(const T zeta) {
 }
 
 /**
- * Derivative of the above. 
+ * Derivative of the above.
  */
 template <typename T>
 constexpr T dGamma(const T zeta) {
@@ -77,12 +77,12 @@ struct soln {
 };
 
 /**
- * Function for finding the x-component of velocity when the 
+ * Function for finding the x-component of velocity when the
  * shear stress, tau, is known.
  */
 template <typename T>
 void soln<T>::find_u(const mesh<T>& grid) {
-  
+
   // Declaring variables
   T sum, dy, ga, gb;
   dy = grid.dy;
@@ -95,7 +95,7 @@ void soln<T>::find_u(const mesh<T>& grid) {
 
   // Integrating
   for (int i=1; i<I; ++i) {
-    
+
     sum = T(0.0);
     for (int j=1; j<J; ++j) {
 
@@ -111,7 +111,7 @@ void soln<T>::find_u(const mesh<T>& grid) {
 }
 
 /**
- * Function for finding the y-component of velocity.  The stream 
+ * Function for finding the y-component of velocity.  The stream
  * function, psi, must be determined prior to calling this function.
  * This function uses the fact that v = -d/dx ( psi ).
  */
@@ -157,7 +157,7 @@ void soln<T>::find_psi(const mesh<T>& grid) {
 
   // Integrating
   for (int i=0; i<I; ++i) {
-    
+
     sum = T(0.0);
     for (int j=1; j<J; ++j) {
 
@@ -189,7 +189,7 @@ soln<T>::soln(const int imax, const int jmax) {
 /**
  * Method for writing data to file.
  */
-template <typename T> 
+template <typename T>
 void soln<T>::write(const mesh<T>& grid, const std::string& fname) const {
 
   std::cout << "\nWriting solution to file named " << fname << std::endl;
@@ -206,9 +206,9 @@ void soln<T>::write(const mesh<T>& grid, const std::string& fname) const {
   tecfile << "zone i=" << I << ", j=" << J << ", f=point\n";
   for (int j=0; j<J; ++j) {
     for (int i=0; i<I; ++i) {
-      tecfile << grid.x[i] << " " << grid.y[j] << " " << tau[j*I+i] << " " << u[j*I+i] 
+      tecfile << grid.x[i] << " " << grid.y[j] << " " << tau[j*I+i] << " " << u[j*I+i]
         << " " << v[j*I+i] << " " << psi[j*I+i] << "\n";
-    }  
+    }
   }
   tecfile.close();
 
@@ -237,7 +237,7 @@ T norm(const soln<T>& s1, const soln<T>& s2) {
 }
 
 /**
- * Function for computing the convective term.  If reversed flow exists, 
+ * Function for computing the convective term.  If reversed flow exists,
  * a downstream stencil is used instead of an upstream stencil.
  *
  * @param[in] s solution object from previous timestep.
@@ -264,7 +264,7 @@ std::vector<T> compute_convective_term(const mesh<T>& grid, soln<T>& s) {
   for (int i=1; i<s.I-1; ++i) {
     for (int j=1; j<s.J; ++j) {
 
-      // Checking for reversed flow. Also using knowledge of the boundary 
+      // Checking for reversed flow. Also using knowledge of the boundary
       // conditions to avoid having to use ghost nodes outside the domain.
       // Specifically, tau -> 1 on the inlet and outlet.
       if (s.u[j*s.I+i]>=T(0.0)) {
@@ -375,12 +375,12 @@ void update(const G& surf, const mesh<T>& grid, const T dt, soln<T>& s_n, soln<T
   auto Mterm      = [&] (const int i, const int j) { return dy/2.0*(b/Gamma<T>(grid.y[j])*(B[j*imax+i]-1.0)+b/Gamma<T>(grid.y[j-1])*(B[(j-1)*imax+i]-1.0)); };
 
   // These are the sums from (4.13a,b) using functional concepts
-  auto N          = [&] (const int i) { 
+  auto N          = [&] (const int i) {
     auto dummy1 = [&] (const int jv) { return Nterm(i,jv); };   // Binding argument of Nterm
     std::transform(jind.begin(),jind.end(),Nv.begin(),dummy1);
     return std::accumulate(Nv.begin(),Nv.end(),T(0));
   };
-  auto M          = [&] (const int i) { 
+  auto M          = [&] (const int i) {
     auto dummy2 = [&] (const int jv) { return Mterm(i,jv); };
     std::transform(jind.begin(),jind.end(),Mv.begin(),dummy2);
     return std::accumulate(Mv.begin(),Mv.end(),T(0));
@@ -388,8 +388,8 @@ void update(const G& surf, const mesh<T>& grid, const T dt, soln<T>& s_n, soln<T
 
   // Coefficients in tridiagonal problem given in (4.15)
   auto cbar       = [&] (const int i) { return pow(Gamma<T>(grid.x[i])/a,2)*2.0*N(i)/(dx*dx)-Gamma<T>(0)/b*(4.0*C[1*imax+i]-3.0-C[2*imax+i])/(2.0*dy); };
-  auto cbar_minus = [&] (const int i) { return -pow(Gamma<T>(grid.x[i])/a,2)*N(i-1)/(dx*dx)+Gamma<T>(grid.x[i])*dGamma<T>(grid.x[i])/(a*a)*N(i-1)/(2.0*dx); }; 
-  auto cbar_plus  = [&] (const int i) { return -pow(Gamma<T>(grid.x[i])/a,2)*N(i+1)/(dx*dx)-Gamma<T>(grid.x[i])*dGamma<T>(grid.x[i])/(a*a)*N(i+1)/(2.0*dx); }; 
+  auto cbar_minus = [&] (const int i) { return -pow(Gamma<T>(grid.x[i])/a,2)*N(i-1)/(dx*dx)+Gamma<T>(grid.x[i])*dGamma<T>(grid.x[i])/(a*a)*N(i-1)/(2.0*dx); };
+  auto cbar_plus  = [&] (const int i) { return -pow(Gamma<T>(grid.x[i])/a,2)*N(i+1)/(dx*dx)-Gamma<T>(grid.x[i])*dGamma<T>(grid.x[i])/(a*a)*N(i+1)/(2.0*dx); };
   auto dbar       = [&] (const int i) { return pow(Gamma<T>(grid.x[i])/a,2)*(M(i+1)-2.0*M(i)+M(i-1))/(dx*dx)+Gamma<T>(grid.x[i])*dGamma<T>(grid.x[i])/(a*a)*(M(i+1) - M(i-1))/(2.0*dx) - surf.d2(a*tan(grid.x[i]*M_PI/2.0)) + Gamma<T>(0)/b*(4.0*B[1*imax+i] - B[2*imax+i])/(2.0*dy); };
 
   // Finding solution for tau_w at current time step
@@ -484,16 +484,17 @@ soln<T> solve(const G& f, const mesh<T>& grid, const T dt, const T tol, const in
     eps = norm<T>(s_n,s_np1);
     residuals.push_back(eps/initial_norm);
     if (iter==1) {
-      initial_norm = eps;
+      //initial_norm = eps;
+      initial_norm = 1.0;
     }
     if (iter==100) {
       auto result = std::max_element(s_np1.u.begin(),s_np1.u.end());
       std::cout << "required time step: " << M_PI*grid.a*grid.dx/(4.0*fabs(*result)) << std::endl;;
     }
-    if (iter%20==0) {
-      std::cout << std::setw(10) << "iteration" << std::setw(10) << "time " << std::setw(10) << "residual " << std::endl;
-      std::cout << "------------------------------------------------------------" << std::endl;
-    }
+    //if (iter%20==0) {
+    //  std::cout << std::setw(10) << "iteration" << std::setw(10) << "time " << std::setw(10) << "residual " << std::endl;
+    //  std::cout << "------------------------------------------------------------" << std::endl;
+    //}
     std::cout << std::setw(10) << iter << std::left << std::setw(10) << t << std::setw(10) << eps/initial_norm << std::endl;
     s_n = soln<T>(s_np1);
     t += dt;
@@ -509,7 +510,7 @@ soln<T> solve(const G& f, const mesh<T>& grid, const T dt, const T tol, const in
   sfile.precision(16);
   sfile.setf(std::ios_base::scientific);
   for (int i=0; i<imax; ++i) {
-  
+
     // Transforming back to the physical plane
     xpt = grid.a*tan(M_PI*grid.x[i]/2.0);
 

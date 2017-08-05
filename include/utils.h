@@ -1,16 +1,16 @@
 /*
  * This file is part of super-td-2d.
- * 
+ *
  * super-td-2d is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * super-td-2d is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with super-td-2d.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -27,7 +27,7 @@
 #include <boost/serialization/vector.hpp>
 
 /**
- * This header contains utility functions for reading data from 
+ * This header contains utility functions for reading data from
  * an input file, and serialization.
  */
 
@@ -53,7 +53,7 @@ struct input_data {
 };
 
 /**
- * Function used to read data from input file.  
+ * Function used to read data from input file.
  *
  * @param[in] input_file std::string which contains input file name.
  * @return input_data struct which contains input data.
